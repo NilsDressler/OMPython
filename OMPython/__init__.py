@@ -1225,14 +1225,14 @@ class ModelicaSystem(object):
             r=""
             self.resultfile = os.path.join(self.tempdir, self.modelName + "_res.mat").replace("\\", "/")
         else:
-            r=" -r=" + resultfile
+            r="-r=" + resultfile
             self.resultfile = resultfile
 
         # allow runtime simulation flags from user input
         if(simflags is None):
             simflags=""
-        else:
-            simflags=" " + simflags
+        elif not isinstance(simflags, list):
+            simflags = simflags.split()
 
         overrideFile = os.path.join(self.tempdir, '{}.{}'.format(self.modelName + "_override", "txt")).replace("\\", "/")
         if (self.overridevariables or self.simoptionsoverride):
@@ -1244,7 +1244,7 @@ class ModelicaSystem(object):
                 name = key + "=" + value + "\n"
                 file.write(name)
             file.close()
-            override =" -overrideFile=" + overrideFile
+            override ="-overrideFile=" + overrideFile
         else:
             override =""
 
@@ -1264,7 +1264,7 @@ class ModelicaSystem(object):
                     print('Input time value is less than simulation startTime for inputs', i)
                     return
             self.createCSVData()  # create csv file
-            csvinput=" -csvInput=" + self.csvFile
+            csvinput="-csvInput=" + self.csvFile
         else:
             csvinput=""
 
@@ -1274,7 +1274,7 @@ class ModelicaSystem(object):
             getExeFile = os.path.join(self.tempdir, self.modelName).replace("\\", "/")
         currentDir = os.getcwd()
         if (os.path.exists(getExeFile)):
-            cmd = getExeFile + override + csvinput + r + simflags
+            cmd = [item for value in [getExeFile, override, csvinput, r, simflags] for item in (value if isinstance(value, list) else [value]) if item]
             #print(cmd)
             os.chdir(self.tempdir)
             if (platform.system() == "Windows"):
